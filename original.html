@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Details - Kaleidoscope View</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #0d0d0e; 
+            color: white; 
+            display: flex; 
+            flex-direction: row; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container { 
+            position: relative;
+            width: 800px; 
+            height: 700px; 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .info-section {
+            width: 400px;
+            padding: 40px;
+            margin-right: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 300;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        #palette-stack {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .palette-group {
+            position: absolute;
+            display: flex; 
+            width: 140px; 
+            height: 50px; 
+            border-radius: 4px;
+            overflow: hidden;
+            mix-blend-mode: screen; 
+            transform-origin: center center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .color-bar {
+            flex: 1; 
+            height: 100%; 
+            backdrop-filter: saturate(180%);
+        }
+
+        /* ★ 이미지 수정: 테두리가 이미지에 딱 붙도록 개선 ★ */
+        #original-image {
+            position: absolute;
+            /* 고정 width를 제거하고 max-width로만 제어하여 가변적으로 대응 */
+            width: auto; 
+            height: auto; 
+            max-width: 260px;  /* 최대 가로 크기 */
+            max-height: 200px; /* 최대 세로 크기 */
+            
+            display: block;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            z-index: 100; 
+
+            left: 50%; 
+            top: 50%;
+            transform: translate(-50%, -50%); 
+
+            /* 테두리 설정: 이제 이미지 크기에 맞게 자동으로 축소됩니다 */
+            border: 1px solid rgba(255,255,255,0.25);
+            background: #000; /* 혹시 모를 배경 비침 방지 */
+        }
+
+        .info-section h2 { color: #00f2ff; font-size: 2.2rem; margin: 0 0 15px 0; letter-spacing: -1px; }
+        .info-meta { margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .info-meta p { color: #aaa; margin: 8px 0; font-size: 0.95rem; }
+        .info-meta b { color: #fff; margin-right: 10px; }
+        
+        .tech-stack { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tech-tag { background: rgba(0, 242, 255, 0.1); border: 1px solid rgba(0, 242, 255, 0.4); color: #00f2ff; padding: 5px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 500; }
+
+        .info-desc { line-height: 1.8; color: #ddd; font-size: 1.05rem; white-space: pre-wrap; margin-bottom: 30px; }
+
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover { background: #fff; color: #000; transform: translateY(-2px); }
+
+        .info-section::-webkit-scrollbar { width: 5px; }
+        .info-section::-webkit-scrollbar-track { background: transparent; }
+        .info-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="palette-stack"></div>
+        <img id="original-image" alt="Source">
+    </div>
+
+    <div class="info-section">
+        <h2 id="project-title">Loading...</h2>
+        <div class="info-meta">
+            <p><b>Period</b> <span id="project-period">-</span></p>
+            <p><b>Tools</b> <span id="project-tools">-</span></p>
+        </div>
+        
+        <div class="tech-stack" id="tech-stack"></div>
+
+        <p class="info-desc" id="project-desc">이미지 데이터를 분석하는 중입니다...</p>
+
+        <a href="kaleidoscope.html" class="back-btn">← Back to Gallery</a>
+    </div>
+
+    <script>
+        const paletteStack = document.getElementById('palette-stack');
+        const originalImg = document.getElementById('original-image');
+        
+        const projectData = {
+            'a.png': { title: 'Fruit basket', period: '『2023.08 - 2023.11』', tools: '「MIT APP Inventor」', tags: ['Mobile'], desc: '낙하하는 과일을 닌자로 획득하는 게임입니다. 하단의 좌우 버튼을 통해서 이동이 가능하며, 과일을 획득시 랜덤하게 점수가 오릅니다. 또한 과일을 3번 놓치면 종료화면으로 전환되고 Restart버튼으로 재시작이 가능합니다.' },
+            'b.jpg': { title: 'Roulette', period: '『2025.03 - 2025.03』', tools: '「UNITY」', tags: ['Mobile'], desc: '룰렛의 기본값으로 요일들이 작성되어있습니다. 터치로 작동하며, 다시 클릭시 추가로 회전합니다.' },
+            'c.jpg': { title: '자동차를 목표로', period: '『2025.04 - 2025.04』', tools: '「UNITY」', tags: ['Mobile'], desc: '손가락으로 스크롤시 자동차가 상하로 이동하며 목표까지의 거리가 출력됩니다. 코드에서 이동축을 변경시 좌우 이동이 가능하도록 했습니다.' },
+            'd.png': { title: 'Jumping Cat', period: '『2025.05 - 2025.05』', tools: '「UNITY」', tags: ['Mobile'], desc: '고양이는 핸드폰의 기울기를 측정하여 움직이며, 클릭시 점프합니다. 목표는 깃발로 깃발에 닿을 시 화면이 전환되며, 재시작이 가능합니다.' },
+            'e.png': { title: 'Fruit basket.Ver2', period: '『2025.05 - 2025.06』', tools: '「UNITY, Adobe Photoshop, Adobe Illustrator」', tags: ['Mobile, PC'], desc: '낙하하는 과일을 바구니로 획득하는 게임입니다. 또한 점수에 비례하는 이벤트가 있으며, 과일을 3번 놓치면 메인화면으로 이동되고 최고 기록일 경우 점수가 저장 됩니다. 기존의 프로그램을 보완하고 Rule창을 추가하였습니다. 크로스플랫폼으로 실행이 가능합니다. 포토샵과 일러스트레이터를 활용하여 직접 에셋들을 만들고 활용했습니다.' },
+            'f.png': { title: 'TOOL BOX', period: '『2025.11 - 2025.12』', tools: '「X code」', tags: ['Mobile - Ios'], desc: '여러 도구가 있는 프로그램으로 할 일 목록, 계산기, 타이머, 손전등 기능이 있습니다.' },
+            'g.png': { title: 'FolderGuardian', period: '『2026.02 - 2026.03』', tools: '「	Visual Studio Code, Unity 6」', tags: ['PC'], desc: '플레이어를 이동시켜 방해물들을 피해 골대에 다다르는 게임입니다. 게임 실행시 바탕화면에 GameWorld라는 폴더가 생성됩니다. 생성된 폴더에 "새 파일, 작은, 벽, 다리"(영어로도 가능합니다.)라는 파일을 생성시 알맞은 물체가 생성됩니다. 가시와 큰 벽 등 장애물이 있으며, 스테이지가 진행됨에 따라 장애물의 갯수와 파일 최대 생성 갯수가 증가합니다.' }
+        };
+
+        const TOTAL_SETS = 34; 
+        const SLICES = 31; 
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const imgUrl = urlParams.get('img');
+
+        if (!imgUrl) location.href = 'kaleidoscope.html';
+
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = imgUrl;
+
+        img.onload = () => {
+            originalImg.src = imgUrl;
+            updateContent(imgUrl);
+            analyzeAndRender();
+        };
+
+        function updateContent(url) {
+            const fileName = url.split('/').pop();
+            const data = projectData[fileName];
+            if (data) {
+                document.getElementById('project-title').innerText = data.title;
+                document.getElementById('project-period').innerText = data.period;
+                document.getElementById('project-tools').innerText = data.tools;
+                document.getElementById('project-desc').innerText = data.desc;
+                const stack = document.getElementById('tech-stack');
+                stack.innerHTML = data.tags.map(t => `<span class="tech-tag">${t}</span>`).join('');
+            } else {
+                document.getElementById('project-title').innerText = "Personal Work";
+                document.getElementById('project-desc').innerText = "상세 정보가 없습니다.";
+            }
+        }
+
+        function getColorDistance(c1, c2) {
+            return Math.sqrt(Math.pow(c1.r-c2.r, 2) + Math.pow(c1.g-c2.g, 2) + Math.pow(c1.b-c2.b, 2));
+        }
+
+        function analyzeAndRender() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 100; canvas.height = 50;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let colors = [];
+            for (let i = 0; i < imgData.length; i += 4) {
+                colors.push({ r: imgData[i], g: imgData[i+1], b: imgData[i+2] });
+            }
+            let palette = [];
+            colors.forEach(c => {
+                let found = palette.find(p => getColorDistance(p, c) < 25);
+                if (found) found.count++; else palette.push({ ...c, count: 1 });
+            });
+            palette.sort((a, b) => b.count - a.count);
+            const finalColors = palette.slice(0, SLICES);
+            createGiantBand(finalColors);
+        }
+
+        function createGiantBand(colorList) {
+            paletteStack.innerHTML = '';
+            const radius = 200; 
+            for (let i = 0; i < TOTAL_SETS; i++) {
+                const group = document.createElement('div');
+                group.className = 'palette-group';
+                const angle = (i / TOTAL_SETS) * Math.PI * 2;
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                const rotation = (angle * 180 / Math.PI);
+                group.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+                colorList.forEach(c => {
+                    const bar = document.createElement('div');
+                    bar.className = 'color-bar';
+                    bar.style.backgroundColor = `rgba(${c.r}, ${c.g}, ${c.b}, 0.4)`;
+                    group.appendChild(bar);
+                });
+                paletteStack.appendChild(group);
+            }
+        }
+    </script>
+</body>
+</html>
