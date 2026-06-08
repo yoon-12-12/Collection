@@ -85,12 +85,14 @@ body {
 .project-grid .project-card:nth-child(4) .card-thumb { background-image: url('../assets/images/4.png'); }
 .project-grid .project-card:nth-child(5) .card-thumb { background-image: url('../assets/images/5.png'); }
 .project-grid .project-card:nth-child(6) .card-thumb { background-image: url('../assets/images/6.png'); }
-.project-grid .project-card:nth-child(7) .card-thumb { background-image: url('https://picsum.photos/600/400'); }
-.project-grid .project-card:nth-child(8) .card-thumb { 
+.project-grid .project-card:nth-child(7) .card-thumb { background-image: url('../assets/images/7.jpg'); }
+.project-grid .project-card:nth-child(8) .card-thumb { background-image: url('../assets/images/8.png'); }
+.project-grid .project-card:nth-child(9) .card-thumb { background-image: url('https://picsum.photos/600/400'); }
+.project-grid .project-card:nth-child(10) .card-thumb { 
     background-image: url('https://img.icons8.com/ios-filled/100/00f2ff/mail.png'); 
     background-size: 50px; background-repeat: no-repeat;
 }
-.project-grid .project-card:nth-child(9) .card-thumb { background-image: url('../assets/images/Blog.png'); }
+.project-grid .project-card:nth-child(11) .card-thumb { background-image: url('../assets/images/Blog.png'); }
 
 /* 버튼 및 모달 스타일 (기존 유지) */
 .btn-primary { padding: 15px 30px; background: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; margin-right: 10px; }
